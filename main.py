@@ -75,7 +75,7 @@ def handle_drop(event):
             return
 
 
-def generate_ini(save_to_root=False):  # 修改函数定义，添加参数
+def generate_ini(save_to_root=False):
     folder_path = folder_entry.get()
     icon_path = icon_entry.get()
     real_name = real_name_entry.get()
@@ -88,59 +88,77 @@ def generate_ini(save_to_root=False):  # 修改函数定义，添加参数
     try:
         icon_file = ""
         if icon_path:
+            # 确保使用绝对路径
+            if not os.path.isabs(icon_path):
+                icon_path = os.path.abspath(icon_path)
+            
             ext = os.path.splitext(icon_path)[1].lower()
             base_name = os.path.splitext(os.path.basename(icon_path))[0]
-            
-            # 根据文件类型确定最终文件名
-            if ext in ('.exe', '.dll'):
-                icon_file = os.path.basename(icon_path)
-            else:
-                icon_file = base_name + '.ico'
             # 处理保存路径
+            folder_abs = os.path.abspath(folder_path)
             if save_to_root:
-                # 获取驱动器根目录并创建ICOconfig文件夹
-                drive = os.path.splitdrive(folder_path)[0] + os.sep
+                drive = os.path.splitdrive(folder_abs)[0] + os.sep
                 ico_config_dir = os.path.join(drive, "ICOconfig")
                 os.makedirs(ico_config_dir, exist_ok=True)
                 os.system(f'attrib +h "{ico_config_dir}"')
+                # 生成最终文件名
+                if ext in ('.exe', '.dll'):
+                    icon_file = os.path.basename(icon_path)
+                else:
+                    icon_file = base_name + '.ico'
                 dest_icon = os.path.join(ico_config_dir, icon_file)
-                # 计算相对路径
-                rel_icon_path = os.path.relpath(dest_icon, folder_path).replace("\\", "/")
-            else:
-                dest_icon = os.path.join(folder_path, icon_file)
-                rel_icon_path = icon_file
-            # 处理文件转换/复制
-            if ext in ('.png', '.jpg', '.jpeg'):
-                # 转换图片为ICO
+                # 验证是否同驱动器
+                if os.path.splitdrive(dest_icon)[0] != os.path.splitdrive(folder_abs)[0]:
+                    messagebox.showerror("错误", "必须保存到同一驱动器根目录")
+                    return
+                # 计算标准化相对路径
                 try:
+                    rel_icon_path = os.path.relpath(
+                        os.path.abspath(dest_icon),
+                        os.path.abspath(folder_abs)
+                    )
+                except ValueError:
+                    messagebox.showerror("错误", "无法生成跨驱动器相对路径")
+                    return
+                # 转换为Windows路径格式
+                rel_icon_path = rel_icon_path.replace("/", "\\")
+            else:
+                # 本地保存处理
+                if ext in ('.exe', '.dll'):
+                    icon_file = os.path.basename(icon_path)
+                else:
+                    icon_file = base_name + '.ico'
+                dest_icon = os.path.join(folder_abs, icon_file)
+                rel_icon_path = icon_file
+            # 文件操作处理
+            try:
+                # 转换图片为ICO
+                if ext in ('.png', '.jpg', '.jpeg'):
                     byte_stream = image_to_ico(icon_path)
-                    # 确保目录存在
                     os.makedirs(os.path.dirname(dest_icon), exist_ok=True)
-                    # 覆盖现有文件
                     if os.path.exists(dest_icon):
                         os.system(f'attrib -h -r "{dest_icon}"')
                         os.remove(dest_icon)
                     with open(dest_icon, 'wb') as f:
                         f.write(byte_stream.read())
-                    os.system(f'attrib +h +r "{dest_icon}"')
-                except Exception as e:
-                    messagebox.showerror("错误", f"ICO转换失败: {str(e)}")
-                    return
-            else:
-                # 处理其他文件类型
-                if os.path.abspath(icon_path) != os.path.abspath(dest_icon):
-                    try:
-                        # 覆盖现有文件
+                else:
+                    # 复制其他类型文件
+                    if os.path.abspath(icon_path) != os.path.abspath(dest_icon):
                         if os.path.exists(dest_icon):
                             os.system(f'attrib -h -r "{dest_icon}"')
                             os.remove(dest_icon)
                         shutil.copyfile(icon_path, dest_icon)
-                        os.system(f'attrib +h +r "{dest_icon}"')
-                    except Exception as e:
-                        messagebox.showerror("错误", f"文件复制失败: {str(e)}")
-                        return
-            icon_file = rel_icon_path
 
+                # 统一设置文件属性
+                os.system(f'attrib -r "{dest_icon}"')
+                os.system(f'attrib +h +r "{dest_icon}"')
+
+            except Exception as e:
+                messagebox.showerror("错误", f"文件操作失败: {str(e)}")
+                return
+            # 最终使用的相对路径
+            icon_file = rel_icon_path
+            
         # 创建desktop.ini内容
         ini_content = f"""[.ShellClassInfo]
 LocalizedResourceName={localized_name}
@@ -148,18 +166,23 @@ InfoTip={info_tip}
 IconResource={icon_file},0
 """
         # 写入文件
-        ini_path = os.path.join(folder_path, "desktop.ini")
+        ini_path = os.path.join(folder_abs, "desktop.ini")
         if os.path.exists(ini_path):
             os.system(f'attrib -h -s "{ini_path}"')
         with open(ini_path, "w", encoding="mbcs") as f:
             f.write(ini_content)
+        
+        # 设置文件属性
         os.system(f'attrib +h +s "{ini_path}"')
-        os.system(f'attrib +s "{folder_path}"')
+        os.system(f'attrib +s "{folder_abs}"')
+        
         # 重命名文件夹
-        if real_name:
-            parent_dir = os.path.dirname(folder_path)
+        if real_name and os.path.basename(folder_abs) != real_name:
+            parent_dir = os.path.dirname(folder_abs)
             new_folder_path = os.path.join(parent_dir, real_name)
-            os.rename(folder_path, new_folder_path)
+            os.rename(folder_abs, new_folder_path)
+            folder_abs = new_folder_path  # 更新路径变量
+
         messagebox.showinfo("成功", "配置完成！\n可能需要刷新文件夹查看效果")
     except Exception as e:
         messagebox.showerror("错误", f"操作失败: {str(e)}")
