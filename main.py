@@ -74,7 +74,8 @@ def handle_drop(event):
             select_icon(path)
             return
 
-def generate_ini():
+
+def generate_ini(save_to_root=False):  # 修改函数定义，添加参数
     folder_path = folder_entry.get()
     icon_path = icon_entry.get()
     real_name = real_name_entry.get()
@@ -87,63 +88,60 @@ def generate_ini():
     try:
         icon_file = ""
         if icon_path:
-            ext = os.path.splitext(icon_path)[1].lower()  # 获取文件扩展名
-            # 处理图片格式转换为ICO
-            if ext in ('.png', '.jpg', '.jpeg'):
-                base_name = os.path.splitext(os.path.basename(icon_path))[0]
+            ext = os.path.splitext(icon_path)[1].lower()
+            base_name = os.path.splitext(os.path.basename(icon_path))[0]
+            
+            # 根据文件类型确定最终文件名
+            if ext in ('.exe', '.dll'):
+                icon_file = os.path.basename(icon_path)
+            else:
                 icon_file = base_name + '.ico'
+            # 处理保存路径
+            if save_to_root:
+                # 获取驱动器根目录并创建ICOconfig文件夹
+                drive = os.path.splitdrive(folder_path)[0] + os.sep
+                ico_config_dir = os.path.join(drive, "ICOconfig")
+                os.makedirs(ico_config_dir, exist_ok=True)
+                os.system(f'attrib +h "{ico_config_dir}"')
+                dest_icon = os.path.join(ico_config_dir, icon_file)
+                # 计算相对路径
+                rel_icon_path = os.path.relpath(dest_icon, folder_path).replace("\\", "/")
+            else:
                 dest_icon = os.path.join(folder_path, icon_file)
-                
-                # 处理已存在的ICO文件
-                if os.path.exists(dest_icon):
-                    try:
-                        os.system(f'attrib -h -r "{dest_icon}"')  # 去除隐藏和只读属性
-                        os.remove(dest_icon)
-                    except Exception as e:
-                        messagebox.showerror("错误", f"无法删除旧图标文件: {str(e)}")
-                        return
-                
-                # 生成并保存ICO文件
+                rel_icon_path = icon_file
+            # 处理文件转换/复制
+            if ext in ('.png', '.jpg', '.jpeg'):
+                # 转换图片为ICO
                 try:
                     byte_stream = image_to_ico(icon_path)
+                    # 确保目录存在
+                    os.makedirs(os.path.dirname(dest_icon), exist_ok=True)
+                    # 覆盖现有文件
+                    if os.path.exists(dest_icon):
+                        os.system(f'attrib -h -r "{dest_icon}"')
+                        os.remove(dest_icon)
                     with open(dest_icon, 'wb') as f:
-                        f.write(byte_stream.read())  # 写入字节流内容
+                        f.write(byte_stream.read())
+                    os.system(f'attrib +h +r "{dest_icon}"')
                 except Exception as e:
                     messagebox.showerror("错误", f"ICO转换失败: {str(e)}")
                     return
-                
-                # 设置文件属性
-                os.system(f'attrib -r "{dest_icon}"')  # 确保文件可写
-                os.system(f'attrib +h +r "{dest_icon}"')  # 隐藏+只读
             else:
-                # 处理ICO或其他格式文件
-                icon_file = os.path.basename(icon_path)
-                dest_icon = os.path.join(folder_path, icon_file)
-                
-                # 处理已存在文件的权限问题
-                if os.path.exists(dest_icon):
-                    try:
-                        os.system(f'attrib -h -r "{dest_icon}"')
-                    except Exception as attr_error:
-                        messagebox.showerror("错误", f"无法修改文件属性: {str(attr_error)}")
-                        return
-                
-                # 检查是否需要复制
+                # 处理其他文件类型
                 if os.path.abspath(icon_path) != os.path.abspath(dest_icon):
                     try:
-                        shutil.copyfile(icon_path, dest_icon)
-                    except PermissionError:
-                        try:
+                        # 覆盖现有文件
+                        if os.path.exists(dest_icon):
+                            os.system(f'attrib -h -r "{dest_icon}"')
                             os.remove(dest_icon)
-                            shutil.copyfile(icon_path, dest_icon)
-                        except Exception as e:
-                            messagebox.showerror("错误", f"文件复制失败: {str(e)}\n请手动删除旧图标文件")
-                            return
-                # 设置文件属性
-                os.system(f'attrib -r "{dest_icon}"')
-                os.system(f'attrib +h +r "{dest_icon}"')
+                        shutil.copyfile(icon_path, dest_icon)
+                        os.system(f'attrib +h +r "{dest_icon}"')
+                    except Exception as e:
+                        messagebox.showerror("错误", f"文件复制失败: {str(e)}")
+                        return
+            icon_file = rel_icon_path
 
-        # 创建desktop.ini内容（以下保持原样）
+        # 创建desktop.ini内容
         ini_content = f"""[.ShellClassInfo]
 LocalizedResourceName={localized_name}
 InfoTip={info_tip}
@@ -153,7 +151,6 @@ IconResource={icon_file},0
         ini_path = os.path.join(folder_path, "desktop.ini")
         if os.path.exists(ini_path):
             os.system(f'attrib -h -s "{ini_path}"')
-        # ANSI编码
         with open(ini_path, "w", encoding="mbcs") as f:
             f.write(ini_content)
         os.system(f'attrib +h +s "{ini_path}"')
@@ -238,10 +235,13 @@ name_entry.grid(row=3, column=1, columnspan=2, padx=5, pady=5, sticky="we")
 tk.Label(root, text="提示信息:").grid(row=4, column=0, padx=5, pady=5, sticky="e")
 tip_entry = tk.Entry(root, width=50)
 tip_entry.grid(row=4, column=1, columnspan=2, padx=5, pady=5, sticky="we")
-tk.Button(root, text="生成配置文件", command=generate_ini,
-          bg="#4CAF50", fg="white").grid(row=5, column=1, pady=(15, 10), sticky="we")
+button_frame = tk.Frame(root)
+button_frame.grid(row=5, column=0, columnspan=3, pady=(15, 10), sticky="we")
+tk.Button(button_frame, text="生成配置文件", command=lambda: generate_ini(),
+          bg="#4CAF50", fg="white").pack(side="left", padx=5, expand=True, fill="x")
+tk.Button(button_frame, text="生成到根目录", command=lambda: generate_ini(True),
+          bg="#2196F3", fg="white").pack(side="left", padx=5, expand=True, fill="x")
 tk.Button(root, text="恢复默认设置", command=restore_default,
-          bg="#f44336", fg="white").grid(row=6, column=1, pady=(0, 5), sticky="we")
-
+          bg="#f44336", fg="white").grid(row=6, column=0, columnspan=3, pady=(0, 50), padx=5, sticky="we")
 root.columnconfigure(1, weight=1)
 root.mainloop()
