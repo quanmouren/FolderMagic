@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 import shutil
+from src.ImageToIco import image_to_ico
 
 def select_folder(folder=None):
     # 清空所有输入框内容
@@ -56,6 +57,7 @@ def select_icon(icon_path=None):
         icon_entry.insert(0, icon_path)
 
 def handle_drop(event):
+    # 处理拖拽事件
     data = event.data
     # 处理路径格式
     if data.startswith('{') and data.endswith('}'):
@@ -85,31 +87,63 @@ def generate_ini():
     try:
         icon_file = ""
         if icon_path:
-            icon_file = os.path.basename(icon_path)
-            dest_icon = os.path.join(folder_path, icon_file)
-            # 处理已存在文件的权限问题
-            if os.path.exists(dest_icon):
-                try:
-                    # 去除只读和隐藏属性
-                    os.system(f'attrib -h -r "{dest_icon}"')
-                except Exception as attr_error:
-                    messagebox.showerror("错误", f"无法修改文件属性: {str(attr_error)}")
-                    return
-            # 检查是否需要复制
-            if os.path.abspath(icon_path) != os.path.abspath(dest_icon):
-                try:
-                    shutil.copyfile(icon_path, dest_icon)
-                except PermissionError:
-                    # 处理文件权限问题
+            ext = os.path.splitext(icon_path)[1].lower()  # 获取文件扩展名
+            # 处理图片格式转换为ICO
+            if ext in ('.png', '.jpg', '.jpeg'):
+                base_name = os.path.splitext(os.path.basename(icon_path))[0]
+                icon_file = base_name + '.ico'
+                dest_icon = os.path.join(folder_path, icon_file)
+                
+                # 处理已存在的ICO文件
+                if os.path.exists(dest_icon):
                     try:
+                        os.system(f'attrib -h -r "{dest_icon}"')  # 去除隐藏和只读属性
                         os.remove(dest_icon)
-                        shutil.copyfile(icon_path, dest_icon)
                     except Exception as e:
-                        messagebox.showerror("错误", f"文件复制失败: {str(e)}\n请手动删除旧图标文件")
+                        messagebox.showerror("错误", f"无法删除旧图标文件: {str(e)}")
                         return
-            os.system(f'attrib -r "{dest_icon}"')
-            os.system(f'attrib +h +r "{dest_icon}"')
-        # 创建desktop.ini内容
+                
+                # 生成并保存ICO文件
+                try:
+                    byte_stream = image_to_ico(icon_path)
+                    with open(dest_icon, 'wb') as f:
+                        f.write(byte_stream.read())  # 写入字节流内容
+                except Exception as e:
+                    messagebox.showerror("错误", f"ICO转换失败: {str(e)}")
+                    return
+                
+                # 设置文件属性
+                os.system(f'attrib -r "{dest_icon}"')  # 确保文件可写
+                os.system(f'attrib +h +r "{dest_icon}"')  # 隐藏+只读
+            else:
+                # 处理ICO或其他格式文件
+                icon_file = os.path.basename(icon_path)
+                dest_icon = os.path.join(folder_path, icon_file)
+                
+                # 处理已存在文件的权限问题
+                if os.path.exists(dest_icon):
+                    try:
+                        os.system(f'attrib -h -r "{dest_icon}"')
+                    except Exception as attr_error:
+                        messagebox.showerror("错误", f"无法修改文件属性: {str(attr_error)}")
+                        return
+                
+                # 检查是否需要复制
+                if os.path.abspath(icon_path) != os.path.abspath(dest_icon):
+                    try:
+                        shutil.copyfile(icon_path, dest_icon)
+                    except PermissionError:
+                        try:
+                            os.remove(dest_icon)
+                            shutil.copyfile(icon_path, dest_icon)
+                        except Exception as e:
+                            messagebox.showerror("错误", f"文件复制失败: {str(e)}\n请手动删除旧图标文件")
+                            return
+                # 设置文件属性
+                os.system(f'attrib -r "{dest_icon}"')
+                os.system(f'attrib +h +r "{dest_icon}"')
+
+        # 创建desktop.ini内容（以下保持原样）
         ini_content = f"""[.ShellClassInfo]
 LocalizedResourceName={localized_name}
 InfoTip={info_tip}
@@ -117,10 +151,9 @@ IconResource={icon_file},0
 """
         # 写入文件
         ini_path = os.path.join(folder_path, "desktop.ini")
-        # 检查文件是否存在 如果存在先去除隐藏和系统属性
         if os.path.exists(ini_path):
             os.system(f'attrib -h -s "{ini_path}"')
-        # ANSI
+        # ANSI编码
         with open(ini_path, "w", encoding="mbcs") as f:
             f.write(ini_content)
         os.system(f'attrib +h +s "{ini_path}"')
@@ -134,9 +167,52 @@ IconResource={icon_file},0
     except Exception as e:
         messagebox.showerror("错误", f"操作失败: {str(e)}")
 
+def restore_default():
+    # 恢复默认设置
+    folder_path = folder_entry.get()
+    if not folder_path:
+        messagebox.showerror("错误", "请先选择要恢复的文件夹")
+        return
+    try:
+        if not os.path.isdir(folder_path):
+            messagebox.showerror("错误", "目标文件夹不存在或不是有效目录")
+            return
+        # 处理desktop.ini
+        ini_path = os.path.join(folder_path, "desktop.ini")
+        icon_resource = None
+        # 读取现有配置获取图标文件
+        if os.path.exists(ini_path):
+            try:
+                # 去除文件属性并读取
+                os.system(f'attrib -h -s -r "{ini_path}"')
+                with open(ini_path, "r", encoding="mbcs") as f:
+                    for line in f:
+                        if line.startswith("IconResource="):
+                            icon_resource = line.split("=", 1)[1].split(",", 1)[0].strip()
+                            break
+                # 删除ini文件
+                os.remove(ini_path)
+            except Exception as e:
+                messagebox.showerror("错误", f"删除配置文件失败: {str(e)}")
+                return
+        # 处理关联的图标文件
+        if icon_resource:
+            icon_path = os.path.join(folder_path, icon_resource)
+            if os.path.exists(icon_path):
+                try:
+                    os.system(f'attrib -h -r "{icon_path}"')  # 去除属性
+                    os.remove(icon_path)
+                except Exception as e:
+                    messagebox.showwarning("警告", f"图标文件删除失败: {str(e)}")
+        # 恢复文件夹属性
+        os.system(f'attrib -s "{folder_path}"')
+        messagebox.showinfo("完成", "已恢复默认设置\n可能需要刷新文件夹查看效果")
+    except Exception as e:
+        messagebox.showerror("错误", f"恢复过程中发生意外错误: {str(e)}")
+
 root = TkinterDnD.Tk()
 root.title("文件夹图标配置工具")
-root.geometry("600x300")
+root.geometry("600x270")
 # 注册拖放事件
 root.drop_target_register(DND_FILES)
 root.dnd_bind('<<Drop>>', handle_drop)
@@ -163,7 +239,9 @@ tk.Label(root, text="提示信息:").grid(row=4, column=0, padx=5, pady=5, stick
 tip_entry = tk.Entry(root, width=50)
 tip_entry.grid(row=4, column=1, columnspan=2, padx=5, pady=5, sticky="we")
 tk.Button(root, text="生成配置文件", command=generate_ini,
-          bg="#4CAF50", fg="white").grid(row=5, column=1, pady=15, sticky="we")
+          bg="#4CAF50", fg="white").grid(row=5, column=1, pady=(15, 10), sticky="we")
+tk.Button(root, text="恢复默认设置", command=restore_default,
+          bg="#f44336", fg="white").grid(row=6, column=1, pady=(0, 5), sticky="we")
 
 root.columnconfigure(1, weight=1)
 root.mainloop()
