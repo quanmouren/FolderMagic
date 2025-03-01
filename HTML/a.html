@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG颜色编辑器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-pane {
+            flex: 1;
+            min-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .controls-pane {
+            flex: 0 0 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-control {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gradient-control {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .gradient-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .gradient-stops {
+            display: flex;
+            gap: 10px;
+        }
+
+        .gradient-stop {
+            flex: 1;
+        }
+
+        .gradient-stop label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-pane">
+            <h2>预览</h2>
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 224 176">
+            <!-- svg:https://github.com/icon11-community/Folder11 -->
+                <defs>
+                    <style>
+                      .cls-1 { fill: url(#linear-gradient-3); }
+                      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+                        fill-rule: evenodd;
+                        stroke-width: 0px;
+                      }
+                      .cls-2 { fill: #fcbc19; }
+                      .cls-3 { fill: url(#linear-gradient); }
+                      .cls-4 { fill: url(#linear-gradient-2); }
+                      .cls-5 { fill: #a6a1a1; }
+                      .cls-7 { mask: url(#mask); }
+                      .cls-6 { fill: url(#linear-gradient-4); }
+                    </style>
+                    <linearGradient id="linear-gradient" x1="15.58" y1="205.55" x2="196.35" y2="24.41" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#05815d"/>
+                      <stop offset="1" stop-color="#0c575f"/>
+                    </linearGradient>
+                    <mask id="mask" x="0" y="0" width="224" height="138" maskUnits="userSpaceOnUse">
+                      <g id="mask0_501_11930" data-name="mask0 501 11930">
+                        <path class="cls-3" d="m87.43,8.38c-4.37-5.31-10.88-8.38-17.75-8.38H12C5.37,0,0,5.37,0,12v114c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12V36.14c0-6.63-5.37-12-12-12h-111.6l-12.98-15.76Z"/>
+                      </g>
+                    </mask>
+                    <linearGradient id="linear-gradient-2" x1="0" y1="162" x2="224" y2="14" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffe7a2"/>
+                      <stop offset=".95" stop-color="#ffcb3d"/>
+                    </linearGradient>
+                    <linearGradient id="linear-gradient-3" x1="-.07" y1="23.32" x2="223.94" y2="20.82" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffcf4e"/>
+                      <stop offset="1" stop-color="#ffb504"/>
+                    </linearGradient>
+                    <linearGradient id="linear-gradient-4" x1="0" y1="148" x2="224" y2="148" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffecb5"/>
+                      <stop offset="1" stop-color="#ffde82"/>
+                    </linearGradient>
+                  </defs>
+                  <path class="cls-2" d="m87.43,8.38c-4.37-5.31-10.88-8.38-17.75-8.38H12C5.37,0,0,5.37,0,12v114c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12V36.14c0-6.63-5.37-12-12-12h-111.6l-12.98-15.76Z"/>
+                  <path class="cls-4" d="m75.79,40c4.98,0,9.82-1.61,13.8-4.6l9.87-7.4h112.54c6.63,0,12,5.37,12,12v124c0,6.63-5.37,12-12,12H12c-6.63,0-12-5.37-12-12V52c0-6.63,5.37-12,12-12h63.79Z"/>
+                  <path class="cls-1" d="m0,160v4c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12v-4c0,6.63-5.37,12-12,12H12c-6.63,0-12-5.37-12-12Z"/>
+                  <path class="cls-6" d="m89.59,35.4c-3.98,2.98-8.82,4.6-13.8,4.6H12c-6.63,0-12,5.37-12,12v4c0-6.63,5.37-12,12-12h63.79c4.98,0,9.82-1.61,13.8-4.6l9.87-7.4h112.54c6.63,0,12,5.37,12,12v-4c0-6.63-5.37-12-12-12h-112.54l-9.87,7.4Z"/>
+            </svg>
+        </div>
+
+        <div class="controls-pane">
+            <h2>颜色控制</h2>
+            <!-- 纯色控制 -->
+            <div class="color-control">
+                <label>强调色 (.cls-2)</label>
+                <input type="color" value="#fcbc19" onchange="updateColor('cls-2', this.value)">
+            </div>
+
+            <div class="gradient-control">
+                <label>顶部渐变 (.cls-6)</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" value="#ffecb5" onchange="updateGradient('linear-gradient-4', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" value="#ffde82" onchange="updateGradient('linear-gradient-4', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+            <!-- 渐变控制 -->
+            <div class="gradient-control">
+                <label>主渐变 (.cls-4)</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" value="#ffe7a2" onchange="updateGradient('linear-gradient-2', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" value="#ffcb3d" onchange="updateGradient('linear-gradient-2', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="gradient-control">
+                <label>底部渐变 (.cls-1)</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" value="#ffcf4e" onchange="updateGradient('linear-gradient-3', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" value="#ffb504" onchange="updateGradient('linear-gradient-3', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // 更新纯色
+        function updateColor(className, color) {
+            document.querySelectorAll(`.${className}`).forEach(el => {
+                el.style.fill = color;
+            });
+        }
+        // 更新渐变颜色
+        function updateGradient(gradientId, stopIndex, color) {
+            const gradient = document.querySelector(`#${gradientId} stop:nth-child(${stopIndex + 1})`);
+            if (gradient) {
+                gradient.setAttribute('stop-color', color);
+                // 强制刷新渐变
+                const gradElement = document.getElementById(gradientId);
+                gradElement.setAttribute('gradientTransform', gradElement.getAttribute('gradientTransform'));
+            }
+        }
+    </script>
+</body>
+</html>
