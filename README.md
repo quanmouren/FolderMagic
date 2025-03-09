@@ -1,7 +1,7 @@
 # FolderMagic
 🖼️ 文件夹图标配置工具
 
-![界面预览](https://raw.githubusercontent.com/quanmouren/FolderMagic/main/res/image.png)
+![界面预览](https://raw.githubusercontent.com/quanmouren/FolderMagic/refs/heads/main/res/image.png)
 
 ## 🚀 使用方法
 
