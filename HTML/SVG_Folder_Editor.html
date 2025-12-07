@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG颜色编辑器</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-pane {
+            flex: 1;
+            min-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: visible;
+        }
+
+        .controls-pane {
+            flex: 0 0 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-control {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-control label {
+            min-width: 90px; 
+            flex-shrink: 0; 
+        }
+
+        .gradient-control {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .gradient-control label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .gradient-stops {
+            display: flex;
+            gap: 10px;
+        }
+
+        .gradient-stop {
+            flex: 1;
+        }
+
+        .gradient-stop label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            flex-grow: 1; 
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            color: #333;
+            font-size: 18px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-pane">
+            <h2>预览</h2>
+            <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 224 176">
+                <defs>
+                    <style id="svg-styles">
+                      .cls-1 { fill: url(#linear-gradient-3); }
+                      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6 {
+                        fill-rule: evenodd;
+                        stroke-width: 0px;
+                      }
+                      .cls-2 { fill: #fcbc19; } /* 强调色 */
+                      .cls-3 { fill: url(#linear-gradient); }
+                      .cls-4 { fill: url(#linear-gradient-2); } /* 主渐变 */
+                      .cls-5 { fill: #a6a1a1; }
+                      .cls-7 { mask: url(#mask); }
+                      .cls-6 { fill: url(#linear-gradient-4); } /* 顶部渐变 */
+                    </style>
+                    <linearGradient id="linear-gradient" x1="15.58" y1="205.55" x2="196.35" y2="24.41" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#05815d"/>
+                      <stop offset="1" stop-color="#0c575f"/>
+                    </linearGradient>
+                    <mask id="mask" x="0" y="0" width="224" height="138" maskUnits="userSpaceOnUse">
+                      <g id="mask0_501_11930" data-name="mask0 501 11930">
+                        <path class="cls-3" d="m87.43,8.38c-4.37-5.31-10.88-8.38-17.75-8.38H12C5.37,0,0,5.37,0,12v114c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12V36.14c0-6.63-5.37-12-12-12h-111.6l-12.98-15.76Z"/>
+                      </g>
+                    </mask>
+                    <linearGradient id="linear-gradient-2" x1="0" y1="162" x2="224" y2="14" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffe7a2"/>
+                      <stop offset=".95" stop-color="#ffcb3d"/>
+                    </linearGradient>
+                    <linearGradient id="linear-gradient-3" x1="-.07" y1="23.32" x2="223.94" y2="20.82" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffcf4e"/>
+                      <stop offset="1" stop-color="#ffb504"/>
+                    </linearGradient>
+                    <linearGradient id="linear-gradient-4" x1="0" y1="148" x2="224" y2="148" gradientTransform="translate(0 190) scale(1 -1)" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stop-color="#ffecb5"/>
+                      <stop offset="1" stop-color="#ffde82"/>
+                    </linearGradient>
+                  </defs>
+                  
+                  <path class="cls-2" d="m87.43,8.38c-4.37-5.31-10.88-8.38-17.75-8.38H12C5.37,0,0,5.37,0,12v114c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12V36.14c0-6.63-5.37-12-12-12h-111.6l-12.98-15.76Z"/>
+                  <path class="cls-4" d="m75.79,40c4.98,0,9.82-1.61,13.8-4.6l9.87-7.4h112.54c6.63,0,12,5.37,12,12v124c0,6.63-5.37,12-12,12H12c-6.63,0-12-5.37-12-12V52c0-6.63,5.37-12,12-12h63.79Z"/>
+                  <path class="cls-1" d="m0,160v4c0,6.63,5.37,12,12,12h200c6.63,0,12-5.37,12-12v-4c0,6.63-5.37,12-12,12H12c-6.63,0-12-5.37-12-12Z"/>
+                  <path class="cls-6" d="m89.59,35.4c-3.98,2.98-8.82,4.6-13.8,4.6H12c-6.63,0-12,5.37-12,12v4c0-6.63,5.37-12,12-12h63.79c4.98,0,9.82-1.61,13.8-4.6l9.87-7.4h112.54c6.63,0,12,5.37,12,12v-4c0-6.63-5.37-12-12-12h-112.54l-9.87,7.4Z"/>
+            </svg>
+        </div>
+
+        <div class="controls-pane">
+            <h2>颜色控制</h2>
+            <div class="color-control">
+                <label>🎨 整体主色调</label>
+                <input type="color" id="primaryColor" value="#ffc83c" onchange="adjustAllColors(this.value)">
+            </div>
+            <div class="color-control">
+                <label>强调色</label>
+                <input type="color" id="input-cls-2" value="#fcbc19" onchange="updateColor('cls-2', this.value)">
+            </div>
+
+            <div class="gradient-control">
+                <label>顶部渐变</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" id="input-grad4-0" value="#ffecb5" onchange="updateGradient('linear-gradient-4', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" id="input-grad4-1" value="#ffde82" onchange="updateGradient('linear-gradient-4', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="gradient-control">
+                <label>主渐变</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" id="input-grad2-0" value="#ffe7a2" onchange="updateGradient('linear-gradient-2', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" id="input-grad2-1" value="#ffcb3d" onchange="updateGradient('linear-gradient-2', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="gradient-control">
+                <label>底部渐变</label>
+                <div class="gradient-stops">
+                    <div class="gradient-stop">
+                        <label>起始颜色</label>
+                        <input type="color" id="input-grad3-0" value="#ffcf4e" onchange="updateGradient('linear-gradient-3', 0, this.value)">
+                    </div>
+                    <div class="gradient-stop">
+                        <label>结束颜色</label>
+                        <input type="color" id="input-grad3-1" value="#ffb504" onchange="updateGradient('linear-gradient-3', 1, this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="exportPng()">⬇️ 导出 PNG 文件</button>
+
+        </div>
+    </div>
+
+    <script>
+        // 颜色处理工具函数
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h * 360, s * 100, l * 100];
+        }
+
+        function hslToRgb(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                function hue2rgb(p, q, t) {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                }
+                let q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                let p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+
+        // 颜色配置及逻辑
+
+        const originalColors = {
+            'cls-2': '#fcbc19',
+            'linear-gradient-4-0': '#ffecb5',
+            'linear-gradient-4-1': '#ffde82',
+            'linear-gradient-2-0': '#ffe7a2', 
+            'linear-gradient-2-1': '#ffcb3d',
+            'linear-gradient-3-0': '#ffcf4e',
+            'linear-gradient-3-1': '#ffb504',
+        };
+
+        const colorInputMap = {
+            'cls-2': 'input-cls-2',
+            'linear-gradient-4-0': 'input-grad4-0',
+            'linear-gradient-4-1': 'input-grad4-1',
+            'linear-gradient-2-0': 'input-grad2-0',
+            'linear-gradient-2-1': 'input-grad2-1',
+            'linear-gradient-3-0': 'input-grad3-0',
+            'linear-gradient-3-1': 'input-grad3-1',
+        };
+
+        const BASE_COLOR_KEY = 'linear-gradient-2-0';
+        const [baseR, baseG, baseB] = hexToRgb(originalColors[BASE_COLOR_KEY]);
+        const [, baseS_orig, baseL_orig] = rgbToHsl(baseR, baseG, baseB);
+        const BASE_S_ORIG = baseS_orig;
+        const BASE_L_ORIG = baseL_orig;
+        const originalHslProperties = {};
+
+        for (const key in originalColors) {
+            const [r, g, b] = hexToRgb(originalColors[key]);
+            const [, s_orig, l_orig] = rgbToHsl(r, g, b);
+
+            const epsilon = 0.001; 
+            const s_ratio = BASE_S_ORIG > epsilon ? s_orig / BASE_S_ORIG : 1;
+            const l_ratio = BASE_L_ORIG > epsilon ? l_orig / BASE_L_ORIG : 1;
+
+            originalHslProperties[key] = { s_ratio, l_ratio };
+        }
+
+        function adjustAllColors(newHexColor) {
+            const [newBaseR, newBaseG, newBaseB] = hexToRgb(newHexColor);
+            const [newH, newBaseS, newBaseL] = rgbToHsl(newBaseR, newBaseG, newBaseB);
+
+            for (const key in originalColors) {
+                const { s_ratio, l_ratio } = originalHslProperties[key];
+
+                let newS = newBaseS * s_ratio;
+                let newL = newBaseL * l_ratio;
+
+                newS = Math.min(100, Math.max(0, newS));
+                newL = Math.min(100, Math.max(0, newL));
+
+                const [rNew, gNew, bNew] = hslToRgb(newH, newS, newL);
+                const newColorHex = rgbToHex(rNew, gNew, bNew);
+
+                if (key === 'cls-2') {
+                    updateColor('cls-2', newColorHex);
+                } else {
+                    const parts = key.split('-');
+                    const gradientId = parts.slice(0, 3).join('-');
+                    const stopIndex = parseInt(parts[3]);
+                    updateGradient(gradientId, stopIndex, newColorHex);
+                }
+
+                // 同步更新控制面板中的输入框值
+                const inputId = colorInputMap[key];
+                const colorInput = document.getElementById(inputId);
+                if (colorInput) {
+                    colorInput.value = newColorHex;
+                }
+            }
+        }
+
+        // 更新纯色
+        function updateColor(className, color) {
+            document.querySelectorAll(`.${className}`).forEach(el => {
+                el.setAttribute('fill', color);
+            });
+            if (className === 'cls-2') {
+                updateSvgStyle('cls-2', color, 'fill');
+            }
+        }
+
+        // 更新渐变颜色
+        function updateGradient(gradientId, stopIndex, color) {
+            const gradient = document.querySelector(`#${gradientId} stop:nth-child(${stopIndex + 1})`);
+            if (gradient) {
+                gradient.setAttribute('stop-color', color);
+                const gradElement = document.getElementById(gradientId);
+                const currentTransform = gradElement.getAttribute('gradientTransform') || '';
+                gradElement.setAttribute('gradientTransform', currentTransform);
+            }
+        }
+
+        // 更新style标签中的CSS定义
+        function updateSvgStyle(className, color, property) {
+            const styleElement = document.getElementById('svg-styles');
+            if (styleElement) {
+                let cssText = styleElement.textContent;
+                const regex = new RegExp(`(\\.${className}\\s*\\{.*?${property}:\\s*)([^;]+)(\\s*;.*?\\})`, 's');
+                if (cssText.match(regex)) {
+                     cssText = cssText.replace(regex, `$1${color}$3`);
+                }
+                styleElement.textContent = cssText;
+            }
+        }
+
+        // 导出PNG逻辑
+
+        const SVG_VIEWBOX_WIDTH = 224;
+        const SVG_VIEWBOX_HEIGHT = 176;
+
+        function exportPng() {
+            const svgElement = document.getElementById('Layer_1');
+            const svgString = new XMLSerializer().serializeToString(svgElement);
+            
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+
+            const canvas = document.createElement('canvas');
+            const scaleFactor = 3;
+            const width = SVG_VIEWBOX_WIDTH * scaleFactor;
+            const height = SVG_VIEWBOX_HEIGHT * scaleFactor;
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, width, height);
+                const pngUrl = canvas.toDataURL('image/png');
+
+                // 触发下载
+                const link = document.createElement('a');
+                link.href = pngUrl;
+                link.download = 'custom_folder.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(svgUrl);
+            };
+
+            img.src = svgUrl;
+        }
+    </script>
+</body>
+</html>
