@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 import shutil
+import subprocess
 from src.ImageToIco import image_to_ico
 
 def select_folder(folder=None):
@@ -183,7 +184,8 @@ IconResource={icon_file},0
             os.rename(folder_abs, new_folder_path)
             folder_abs = new_folder_path  # 更新路径变量
 
-        messagebox.showinfo("成功", "配置完成！\n可能需要刷新文件夹查看效果")
+        subprocess.run(['ie4uinit.exe', '-show'], shell=True)
+        messagebox.showinfo("成功", "配置完成！\n刷新文件夹查看效果")
     except Exception as e:
         messagebox.showerror("错误", f"操作失败: {str(e)}")
 
