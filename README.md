@@ -1,7 +1,8 @@
 # FolderMagic
 
-FolderMagic 是一个 Windows 文件夹图标配置工具，使用 C# 实现。
 🖼️ 文件夹图标配置工具
+
+FolderMagic 是一个 Windows 文件夹图标配置工具，使用 C# 实现。
 
 ![界面预览](./docs/image.png "FolderMagic 界面预览")
 
