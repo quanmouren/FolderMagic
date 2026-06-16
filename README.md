@@ -20,6 +20,11 @@ dotnet build FolderMagic.sln
 dotnet run --project FolderMagic.WinForms
 ```
 
+## ⚠️ 注意事项
+程序将会创建/修改`desktop.ini`文件，如需手动编辑需要在文件夹选项的查看中关闭`隐藏受保护的操作系统文件(推荐)`
+
+生成配置文件将覆盖原有`desktop.ini`文件，不推荐修改`系统桌面`、`下载`、`应用`、`文档`、`音乐`、`视频`和`地图`默认保存位置的文件夹
+
 ## 实现原理
 
 程序通过创建或修改目标文件夹中的 `desktop.ini` 来设置文件夹显示信息：
